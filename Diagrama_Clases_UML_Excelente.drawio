@@ -1,0 +1,103 @@
+<mxfile host="Electron" agent="5.0">
+  <diagram id="diagrama-clases-100" name="Diagrama de Clases UML - Excelente 100%">
+    <mxGraphModel dx="1157" dy="607" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="c_persona" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=42;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#1565C0;strokeColor=#0D47A1;fontColor=#FFFFFF;fontSize=13;" value="«abstract»&#xa;Persona" vertex="1">
+          <mxGeometry height="210" width="230" x="30" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="c_persona_attrs" parent="c_persona" style="text;strokeColor=#1565C0;fillColor=#BBDEFB;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=11;" value="{key} -Plong id&#xa;- String nombre&#xa;- String email&#xa;- String telefono&#xa;- LocalDateTime fechaCreacionP&#xa;- LocalDateTime fechaActualizacionP" vertex="1">
+          <mxGeometry height="128" width="230" y="42" as="geometry" />
+        </mxCell>
+        <mxCell id="c_persona_mets" parent="c_persona" style="text;strokeColor=#1565C0;fillColor=#E3F2FD;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=11;" value="+ getters/setters()" vertex="1">
+          <mxGeometry height="40" width="230" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="c_usuario" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#3949AB;strokeColor=#1A237E;fontColor=#FFFFFF;fontSize=13;" value="Usuario" vertex="1">
+          <mxGeometry height="210" width="230" x="30" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="c_usuario_attrs" parent="c_usuario" style="text;strokeColor=#3949AB;fillColor=#C5CAE9;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=11;" value="{key} - Ulong id&#xa;- String username&#xa;- String passwordHash&#xa;- String rol&#xa;- Boolean activo&#xa;- LocalDateTime fechaCreacion" vertex="1">
+          <mxGeometry height="140" width="230" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="c_usuario_mets" parent="c_usuario" style="text;strokeColor=#3949AB;fillColor=#E8EAF6;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=11;" value="+ getters/setters()" vertex="1">
+          <mxGeometry height="40" width="230" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="c_organizador" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=13;" value="Organizador" vertex="1">
+          <mxGeometry height="130" width="200" x="320" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c_organizador_attrs" parent="c_organizador" style="text;strokeColor=#2E7D32;fillColor=#C8E6C9;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=11;" value="- String departamento" vertex="1">
+          <mxGeometry height="40" width="200" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="c_organizador_mets" parent="c_organizador" style="text;strokeColor=#2E7D32;fillColor=#E8F5E9;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=11;" value="+ getters/setters()" vertex="1">
+          <mxGeometry height="60" width="200" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="c_asistente" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#EF6C00;strokeColor=#E65100;fontColor=#FFFFFF;fontSize=13;" value="Asistente" vertex="1">
+          <mxGeometry height="130" width="200" x="320" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="c_asistente_attrs" parent="c_asistente" style="text;strokeColor=#EF6C00;fillColor=#FFE0B2;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=11;" value="- String documento" vertex="1">
+          <mxGeometry height="40" width="200" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="c_asistente_mets" parent="c_asistente" style="text;strokeColor=#EF6C00;fillColor=#FFF3E0;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=11;" value="+ getters/setters()" vertex="1">
+          <mxGeometry height="60" width="200" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="c_evento" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#7B1FA2;strokeColor=#4A148C;fontColor=#FFFFFF;fontSize=13;" value="Evento" vertex="1">
+          <mxGeometry height="360" width="270" x="590" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="c_evento_attrs" parent="c_evento" style="text;strokeColor=#7B1FA2;fillColor=#E1BEE7;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=11;" value="{key} -Elong id&#xa;- String nombre&#xa;- String descripcion&#xa;- LocalDateTime fechaInicio&#xa;- LocalDateTime fechaFin&#xa;- Integer capacidadMaxima&#xa;- Integer registrados&#xa;- Boolean activo&#xa;- LocalDateTime fechaCreacionE&#xa;- LocalDateTime fechaActualizacionE" vertex="1">
+          <mxGeometry height="190" width="270" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="c_evento_mets" parent="c_evento" style="text;strokeColor=#7B1FA2;fillColor=#F3E5F5;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=11;" value="+ tieneCupo() : boolean&#xa;+ incrementarRegistros() : void&#xa;+ decrementarRegistros() : void&#xa;+ getCuposDisponibles() : int&#xa;+ getters/setters()" vertex="1">
+          <mxGeometry height="140" width="270" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="c_ubicacion" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#C62828;strokeColor=#B71C1C;fontColor=#FFFFFF;fontSize=13;" value="Ubicacion" vertex="1">
+          <mxGeometry height="200" width="230" x="940" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="c_ubicacion_attrs" parent="c_ubicacion" style="text;strokeColor=#C62828;fillColor=#FFCDD2;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=11;" value="{key} - Ublong id&#xa;- String direccion&#xa;- String ciudad&#xa;- Double latitud&#xa;- Double longitud" vertex="1">
+          <mxGeometry height="120" width="230" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="c_ubicacion_mets" parent="c_ubicacion" style="text;strokeColor=#C62828;fillColor=#FFEBEE;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=11;" value="+ getters/setters()" vertex="1">
+          <mxGeometry height="50" width="230" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="c_registro" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#00838F;strokeColor=#006064;fontColor=#FFFFFF;fontSize=13;" value="Registro" vertex="1">
+          <mxGeometry height="160" width="250" x="590" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="c_registro_attrs" parent="c_registro" style="text;strokeColor=#00838F;fillColor=#B2EBF2;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=11;" value="{key} - Rlong id&#xa;- EstadoRegistro estado&#xa;- LocalDateTime fechaRegistro" vertex="1">
+          <mxGeometry height="80" width="250" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="c_registro_mets" parent="c_registro" style="text;strokeColor=#00838F;fillColor=#E0F7FA;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=11;" value="+ getters/setters()" vertex="1">
+          <mxGeometry height="50" width="250" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="c_estado" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=42;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#5E35B1;strokeColor=#311B92;fontColor=#FFFFFF;fontSize=12;" value="«enumeration»&#xa;EstadoRegistro" vertex="1">
+          <mxGeometry height="150" width="180" x="920" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="c_estado_vals" parent="c_estado" style="text;strokeColor=#5E35B1;fillColor=#D1C4E9;align=left;verticalAlign=top;spacingLeft=12;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="CONFIRMADO&#xa;LISTA_ESPERA&#xa;CANCELADO" vertex="1">
+          <mxGeometry height="108" width="180" y="42" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="c_persona" style="endArrow=block;endFill=0;endSize=14;html=1;rounded=0;strokeWidth=1.5;exitX=1;exitY=0.25;entryX=0;entryY=0.5;" target="c_organizador">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="c_persona" style="endArrow=block;endFill=0;endSize=14;html=1;rounded=0;strokeWidth=1.5;exitX=1;exitY=0.75;entryX=0;entryY=0.5;" target="c_asistente">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="c_usuario" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;fontSize=11;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="c_asistente" value="perfil&#xa;1          0..1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="c_organizador" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;fontSize=11;exitX=1;exitY=0.5;entryX=0;entryY=0.15;" target="c_evento" value="organiza&#xa;1          *">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="c_evento" style="endArrow=diamondThin;endFill=1;endSize=16;html=1;rounded=0;strokeWidth=1.5;fontSize=11;exitX=1;exitY=0.25;entryX=0;entryY=0.5;" target="c_ubicacion" value="1          1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="c_evento" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;fontSize=11;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" target="c_registro" value="contiene&#xa;1          *">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="c_asistente" style="endArrow=none;html=1;rounded=0;strokeWidth=1.5;fontSize=11;exitX=1;exitY=0.7;entryX=0;entryY=0.5;" target="c_registro" value="realiza&#xa;1          *">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="c_registro" style="endArrow=open;html=1;rounded=0;strokeWidth=1.5;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="c_estado">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
