@@ -1,0 +1,82 @@
+{
+  "info": {
+    "name": "Grupo 6 - Casos de Ubicacion",
+    "description": "Casos de exito y de error del modulo de ubicaciones (CU-05 a CU-08, RN-07). Se ejecuta con el entorno 'Grupo 6 - Local'.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Crear ubicacion (201)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
+          "pm.test(\"devuelve la capacidad enviada\", () => pm.expect(pm.response.json().capacidad).to.eql(5));"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Sala de Pruebas {{$timestamp}}\",\n  \"direccion\": \"Edificio de Ingenieria\",\n  \"ciudad\": \"Santa Ana\",\n  \"capacidad\": 5,\n  \"latitud\": 13.995,\n  \"longitud\": -89.56\n}" },
+        "url": { "raw": "{{baseUrl}}/api/ubicaciones", "host": ["{{baseUrl}}"], "path": ["api", "ubicaciones"] }
+      }
+    },
+    {
+      "name": "Listar ubicaciones (200)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+          "pm.test(\"devuelve un arreglo\", () => pm.expect(pm.response.json()).to.be.an(\"array\"));"
+        ] } }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/api/ubicaciones", "host": ["{{baseUrl}}"], "path": ["api", "ubicaciones"] }
+      }
+    },
+    {
+      "name": "ERROR - Consultar ubicacion inexistente (404)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test(\"404 Not Found\", () => pm.response.to.have.status(404));",
+          "pm.test(\"explica que no existe\", () => pm.expect(pm.response.json().message).to.contain(\"no existe\"));"
+        ] } }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/api/ubicaciones/999999", "host": ["{{baseUrl}}"], "path": ["api", "ubicaciones", "999999"] }
+      }
+    },
+    {
+      "name": "ERROR - Validacion capacidad cero (400)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));",
+          "pm.test(\"detalla el campo invalido\", () => pm.expect(pm.response.json().details).to.be.an(\"array\").that.is.not.empty);"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"\",\n  \"capacidad\": 0\n}" },
+        "url": { "raw": "{{baseUrl}}/api/ubicaciones", "host": ["{{baseUrl}}"], "path": ["api", "ubicaciones"] }
+      }
+    },
+    {
+      "name": "ERROR - Eliminar ubicacion con eventos (409)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));",
+          "pm.test(\"aplica RN-07\", () => pm.expect(pm.response.json().message).to.contain(\"eventos asociados\"));"
+        ] } }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/api/ubicaciones/1", "host": ["{{baseUrl}}"], "path": ["api", "ubicaciones", "1"] }
+      }
+    }
+  ],
+  "variable": [{ "key": "baseUrl", "value": "http://localhost:8080" }]
+}
