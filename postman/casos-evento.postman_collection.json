@@ -1,0 +1,88 @@
+{
+  "info": {
+    "name": "Grupo 6 - Casos de Evento",
+    "description": "Casos de exito y de error del modulo de eventos (CU-01 a CU-04 y CU-13; RN-01, RN-05, RN-06 y RN-10). Se ejecuta con el entorno 'Grupo 6 - Local'.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Eventos disponibles (200)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+          "pm.test(\"todos los eventos tienen cupo\", () => pm.response.json().forEach(e => pm.expect(e.cuposDisponibles).to.be.above(0)));",
+          "pm.test(\"todos estan PUBLICADOS\", () => pm.response.json().forEach(e => pm.expect(e.estado).to.eql(\"PUBLICADO\")));"
+        ] } }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/api/eventos/disponibles", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "disponibles"] }
+      }
+    },
+    {
+      "name": "Listar eventos por estado (200)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+          "pm.test(\"devuelve un arreglo\", () => pm.expect(pm.response.json()).to.be.an(\"array\"));"
+        ] } }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/eventos?estado=PUBLICADO",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "eventos"],
+          "query": [{ "key": "estado", "value": "PUBLICADO" }]
+        }
+      }
+    },
+    {
+      "name": "ERROR - Crear evento con fecha pasada (400)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));",
+          "pm.test(\"aplica RN-10\", () => pm.expect(pm.response.json().message).to.contain(\"futura\"));"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"ubicacionId\": 1,\n  \"nombre\": \"Evento en el pasado\",\n  \"fechaInicio\": \"2020-01-01T10:00:00\",\n  \"capacidadMaxima\": 10,\n  \"estado\": \"BORRADOR\"\n}" },
+        "url": { "raw": "{{baseUrl}}/api/eventos", "host": ["{{baseUrl}}"], "path": ["api", "eventos"] }
+      }
+    },
+    {
+      "name": "ERROR - Reducir capacidad por debajo de los inscritos (409)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));",
+          "pm.test(\"aplica RN-05\", () => pm.expect(pm.response.json().message).to.contain(\"no puede ser menor\"));"
+        ] } }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"ubicacionId\": 2,\n  \"nombre\": \"Taller de Spring Boot\",\n  \"descripcion\": \"Prueba de RN-05\",\n  \"fechaInicio\": \"2026-12-01T10:00:00\",\n  \"capacidadMaxima\": 1,\n  \"estado\": \"PUBLICADO\"\n}" },
+        "url": { "raw": "{{baseUrl}}/api/eventos/2", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "2"] }
+      }
+    },
+    {
+      "name": "ERROR - Eliminar evento con inscritos (409)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));",
+          "pm.test(\"aplica RN-06\", () => pm.expect(pm.response.json().message).to.contain(\"asistentes inscritos\"));"
+        ] } }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/api/eventos/2", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "2"] }
+      }
+    }
+  ],
+  "variable": [{ "key": "baseUrl", "value": "http://localhost:8080" }]
+}
