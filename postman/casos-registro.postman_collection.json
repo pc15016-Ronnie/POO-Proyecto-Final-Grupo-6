@@ -1,0 +1,99 @@
+{
+  "info": {
+    "name": "Grupo 6 - Casos de Registro",
+    "description": "Casos de exito y de error del modulo de registro (CU-14 a CU-17; RN-02, RN-03, RN-04, RN-10 y RN-11). Se ejecuta con el entorno 'Grupo 6 - Local'.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Registrar asistente en un evento (201)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
+          "pm.test(\"el registro queda ACTIVO\", () => pm.expect(pm.response.json().estado).to.eql(\"ACTIVO\"));",
+          "pm.environment.set(\"idRegistro\", pm.response.json().id);"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"asistenteId\": 3\n}" },
+        "url": { "raw": "{{baseUrl}}/api/eventos/2/registros", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "2", "registros"] }
+      }
+    },
+    {
+      "name": "Consultar disponibilidad (200)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+          "pm.test(\"inscritos + disponibles = capacidad\", () => { const b = pm.response.json(); pm.expect(b.inscritos + b.disponibles).to.eql(b.capacidadMaxima); });"
+        ] } }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/api/eventos/2/disponibilidad", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "2", "disponibilidad"] }
+      }
+    },
+    {
+      "name": "ERROR - Registro duplicado del mismo asistente (409)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));",
+          "pm.test(\"aplica RN-04\", () => pm.expect(pm.response.json().message).to.contain(\"ya esta registrado\"));"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"asistenteId\": 2\n}" },
+        "url": { "raw": "{{baseUrl}}/api/eventos/2/registros", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "2", "registros"] }
+      }
+    },
+    {
+      "name": "ERROR - Evento con el cupo lleno (409)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));",
+          "pm.test(\"aplica RN-03\", () => pm.expect(pm.response.json().message).to.contain(\"capacidad maxima\"));"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"asistenteId\": 3\n}" },
+        "url": { "raw": "{{baseUrl}}/api/eventos/4/registros", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "4", "registros"] }
+      }
+    },
+    {
+      "name": "Cancelar registro (200)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+          "pm.test(\"queda CANCELADO\", () => pm.expect(pm.response.json().estado).to.eql(\"CANCELADO\"));",
+          "pm.test(\"registra la fecha de cancelacion (RN-11)\", () => pm.expect(pm.response.json().fechaCancelacion).to.not.be.null);"
+        ] } }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/api/registros/1/cancelar", "host": ["{{baseUrl}}"], "path": ["api", "registros", "1", "cancelar"] }
+      }
+    },
+    {
+      "name": "Listar asistentes del evento (200)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+          "pm.test(\"devuelve un arreglo\", () => pm.expect(pm.response.json()).to.be.an(\"array\"));"
+        ] } }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/api/eventos/2/asistentes", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "2", "asistentes"] }
+      }
+    }
+  ],
+  "variable": [{ "key": "baseUrl", "value": "http://localhost:8080" }]
+}
