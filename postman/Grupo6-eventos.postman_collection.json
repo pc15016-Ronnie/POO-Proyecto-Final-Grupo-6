@@ -1,0 +1,487 @@
+{
+  "info": {
+    "_postman_id": "6a1b7c2e-0000-4000-8000-grupo6eventos0001",
+    "name": "Grupo 6 - API Eventos y Asistentes",
+    "description": "Coleccion de pruebas de la API para Gestion de Eventos y Asistentes.\n\nIncluye carpetas por entidad (Ubicacion, Evento, Asistente, Registro), los casos de exito y de error, y la carpeta **Flujo demo** con la secuencia que se muestra en la defensa.\n\nAntes de ejecutar: levantar la base con `docker compose up -d`, arrancar la app con `mvn spring-boot:run` e importar el entorno `local.postman_environment.json`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Flujo demo (en orden)",
+      "item": [
+        {
+          "name": "01 - Crear ubicacion (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.environment.set(\"idUbicacion\", body.id);",
+                  "pm.test(\"devuelve la capacidad del lugar\", () => pm.expect(body.capacidad).to.eql(5));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Sala de Demostracion {{$timestamp}}\",\n  \"direccion\": \"Edificio de Ingenieria\",\n  \"ciudad\": \"Santa Ana\",\n  \"capacidad\": 5,\n  \"latitud\": 13.995,\n  \"longitud\": -89.56\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/ubicaciones", "host": ["{{baseUrl}}"], "path": ["api", "ubicaciones"] },
+            "description": "CU-05: crear ubicacion."
+          }
+        },
+        {
+          "name": "02 - Crear evento en BORRADOR (201)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const pad = n => String(n).padStart(2, \"0\");",
+                  "const uno = new Date(Date.now() + 7 * 86400000);",
+                  "const dos = new Date(Date.now() + 7 * 86400000 + 3 * 3600000);",
+                  "const formatear = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:00`;",
+                  "pm.environment.set(\"fechaInicio\", formatear(uno));",
+                  "pm.environment.set(\"fechaFin\", formatear(dos));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.environment.set(\"idEvento\", body.id);",
+                  "pm.test(\"inicia en estado BORRADOR\", () => pm.expect(body.estado).to.eql(\"BORRADOR\"));",
+                  "pm.test(\"los cupos disponibles son la capacidad total\", () => pm.expect(body.cuposDisponibles).to.eql(body.capacidadMaxima));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ubicacionId\": {{idUbicacion}},\n  \"nombre\": \"Evento de demostracion\",\n  \"descripcion\": \"Evento creado desde Postman\",\n  \"fechaInicio\": \"{{fechaInicio}}\",\n  \"fechaFin\": \"{{fechaFin}}\",\n  \"capacidadMaxima\": 3,\n  \"estado\": \"BORRADOR\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/eventos", "host": ["{{baseUrl}}"], "path": ["api", "eventos"] },
+            "description": "CU-01: crear evento. RN-01 y RN-12."
+          }
+        },
+        {
+          "name": "03 - Publicar evento (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"queda PUBLICADO\", () => pm.expect(pm.response.json().estado).to.eql(\"PUBLICADO\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ubicacionId\": {{idUbicacion}},\n  \"nombre\": \"Evento de demostracion\",\n  \"descripcion\": \"Evento creado desde Postman\",\n  \"fechaInicio\": \"{{fechaInicio}}\",\n  \"fechaFin\": \"{{fechaFin}}\",\n  \"capacidadMaxima\": 3,\n  \"estado\": \"PUBLICADO\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/eventos/{{idEvento}}", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "{{idEvento}}"] },
+            "description": "CU-03: actualizar el estado a PUBLICADO."
+          }
+        },
+        {
+          "name": "04 - Crear asistente (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.environment.set(\"idAsistente\", body.id);",
+                  "pm.test(\"normaliza el correo a minusculas\", () => pm.expect(body.email).to.eql(body.email.toLowerCase()));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Asistente\",\n  \"apellido\": \"De Prueba {{$timestamp}}\",\n  \"email\": \"asistente.{{$timestamp}}@ues.edu.sv\",\n  \"telefono\": \"7000-0000\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/asistentes", "host": ["{{baseUrl}}"], "path": ["api", "asistentes"] },
+            "description": "CU-09: crear asistente. RN-09."
+          }
+        },
+        {
+          "name": "05 - Registrar asistente en el evento (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.environment.set(\"idRegistro\", body.id);",
+                  "pm.test(\"el registro queda ACTIVO\", () => pm.expect(body.estado).to.eql(\"ACTIVO\"));",
+                  "pm.test(\"descuenta un cupo\", () => pm.expect(body.cuposDisponibles).to.eql(2));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"asistenteId\": {{idAsistente}}\n}" },
+            "url": { "raw": "{{baseUrl}}/api/eventos/{{idEvento}}/registros", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "{{idEvento}}", "registros"] },
+            "description": "CU-14: registrar asistente. RN-02, RN-03, RN-04 y RN-10."
+          }
+        },
+        {
+          "name": "06 - Consultar disponibilidad (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"inscritos + disponibles = capacidad\", () => pm.expect(body.inscritos + body.disponibles).to.eql(body.capacidadMaxima));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/eventos/{{idEvento}}/disponibilidad", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "{{idEvento}}", "disponibilidad"] },
+            "description": "CU-16: disponibilidad de cupo."
+          }
+        },
+        {
+          "name": "07 - Listar asistentes del evento (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/eventos/{{idEvento}}/asistentes", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "{{idEvento}}", "asistentes"] },
+            "description": "CU-17: asistentes inscritos (activos)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"devuelve una lista\", () => pm.expect(pm.response.json()).to.be.an(\"array\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 - Registro duplicado (409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"asistenteId\": {{idAsistente}}\n}" },
+            "url": { "raw": "{{baseUrl}}/api/eventos/{{idEvento}}/registros", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "{{idEvento}}", "registros"] },
+            "description": "RN-04: un asistente no puede tener dos registros activos en el mismo evento."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"explica el motivo\", () => pm.expect(pm.response.json().message).to.contain(\"ya esta registrado\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 - Cancelar registro (200)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/registros/{{idRegistro}}/cancelar", "host": ["{{baseUrl}}"], "path": ["api", "registros", "{{idRegistro}}", "cancelar"] },
+            "description": "CU-15 y RN-11: cancelar libera un cupo."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"queda CANCELADO\", () => pm.expect(body.estado).to.eql(\"CANCELADO\"));",
+                  "pm.test(\"registra la fecha de cancelacion\", () => pm.expect(body.fechaCancelacion).to.not.be.null);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 - Reinscribir tras cancelar (201)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"asistenteId\": {{idAsistente}}\n}" },
+            "url": { "raw": "{{baseUrl}}/api/eventos/{{idEvento}}/registros", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "{{idEvento}}", "registros"] },
+            "description": "Demuestra el indice unico parcial: despues de cancelar se puede volver a inscribir."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
+                  "pm.environment.set(\"idRegistroNuevo\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11 - Eliminar el registro cancelado (204)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/registros/{{idRegistro}}", "host": ["{{baseUrl}}"], "path": ["api", "registros", "{{idRegistro}}"] },
+            "description": "Solo se pueden eliminar registros cancelados."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"204 No Content\", () => pm.response.to.have.status(204));",
+                  "pm.environment.set(\"idRegistro\", pm.environment.get(\"idRegistroNuevo\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ubicacion",
+      "item": [
+        {
+          "name": "Listar ubicaciones (200)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/ubicaciones", "host": ["{{baseUrl}}"], "path": ["api", "ubicaciones"] } },
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"200 OK\", () => pm.response.to.have.status(200));"] } }
+          ]
+        },
+        {
+          "name": "Consultar una ubicacion (200)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/ubicaciones/{{idUbicacion}}", "host": ["{{baseUrl}}"], "path": ["api", "ubicaciones", "{{idUbicacion}}"] } },
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"200 OK\", () => pm.response.to.have.status(200));"] } }
+          ]
+        },
+        {
+          "name": "Actualizar ubicacion (200)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Sala de Demostracion (actualizada)\",\n  \"direccion\": \"Edificio de Ingenieria\",\n  \"ciudad\": \"Santa Ana\",\n  \"capacidad\": 8,\n  \"latitud\": 13.995,\n  \"longitud\": -89.56\n}" },
+            "url": { "raw": "{{baseUrl}}/api/ubicaciones/{{idUbicacion}}", "host": ["{{baseUrl}}"], "path": ["api", "ubicaciones", "{{idUbicacion}}"] }
+          },
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"200 OK\", () => pm.response.to.have.status(200));", "pm.test(\"actualiza la capacidad\", () => pm.expect(pm.response.json().capacidad).to.eql(8));"] } }
+          ]
+        },
+        {
+          "name": "ERROR - Crear sin nombre ni capacidad (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"\",\n  \"capacidad\": 0\n}" },
+            "url": { "raw": "{{baseUrl}}/api/ubicaciones", "host": ["{{baseUrl}}"], "path": ["api", "ubicaciones"] }
+          },
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));", "pm.test(\"detalla los campos con error\", () => pm.expect(pm.response.json().details).to.be.an(\"array\").that.is.not.empty);"] } }
+          ]
+        },
+        {
+          "name": "ERROR - Consultar ubicacion inexistente (404)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/ubicaciones/999999", "host": ["{{baseUrl}}"], "path": ["api", "ubicaciones", "999999"] } },
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"404 Not Found\", () => pm.response.to.have.status(404));"] } }
+          ]
+        },
+        {
+          "name": "ERROR - Eliminar ubicacion con eventos (409)",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{baseUrl}}/api/ubicaciones/{{idUbicacion}}", "host": ["{{baseUrl}}"], "path": ["api", "ubicaciones", "{{idUbicacion}}"] } },
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));", "pm.test(\"aplica RN-07\", () => pm.expect(pm.response.json().message).to.contain(\"eventos asociados\"));"] } }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Evento",
+      "item": [
+        {
+          "name": "Listar eventos (200)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/eventos", "host": ["{{baseUrl}}"], "path": ["api", "eventos"] } },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"200 OK\", () => pm.response.to.have.status(200));"] } } ]
+        },
+        {
+          "name": "Listar eventos PUBLICADOS (filtro) (200)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/eventos?estado=PUBLICADO", "host": ["{{baseUrl}}"], "path": ["api", "eventos"], "query": [{ "key": "estado", "value": "PUBLICADO" }] } },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"200 OK\", () => pm.response.to.have.status(200));", "pm.test(\"todos estan PUBLICADOS\", () => pm.response.json().forEach(e => pm.expect(e.estado).to.eql(\"PUBLICADO\")));"] } } ]
+        },
+        {
+          "name": "Eventos disponibles (200)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/eventos/disponibles", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "disponibles"] } },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"200 OK\", () => pm.response.to.have.status(200));", "pm.test(\"todos tienen cupo\", () => pm.response.json().forEach(e => pm.expect(e.cuposDisponibles).to.be.above(0)));"] } } ]
+        },
+        {
+          "name": "Consultar un evento (200)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/eventos/{{idEvento}}", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "{{idEvento}}"] } },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"200 OK\", () => pm.response.to.have.status(200));"] } } ]
+        },
+        {
+          "name": "ERROR - Crear evento con fecha pasada (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"ubicacionId\": {{idUbicacion}},\n  \"nombre\": \"Evento en el pasado\",\n  \"fechaInicio\": \"2020-01-01T10:00:00\",\n  \"capacidadMaxima\": 10,\n  \"estado\": \"BORRADOR\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/eventos", "host": ["{{baseUrl}}"], "path": ["api", "eventos"] }
+          },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));"] } } ]
+        },
+        {
+          "name": "ERROR - Capacidad menor que los inscritos (409)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"ubicacionId\": {{idUbicacion}},\n  \"nombre\": \"Evento de demostracion\",\n  \"descripcion\": \"Prueba de RN-05\",\n  \"fechaInicio\": \"{{fechaInicio}}\",\n  \"fechaFin\": \"{{fechaFin}}\",\n  \"capacidadMaxima\": 1,\n  \"estado\": \"PUBLICADO\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/eventos/{{idEvento}}", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "{{idEvento}}"] }
+          },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));", "pm.test(\"aplica RN-05\", () => pm.expect(pm.response.json().message).to.contain(\"no puede ser menor\"));"] } } ]
+        },
+        {
+          "name": "ERROR - Eliminar evento con inscritos (409)",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{baseUrl}}/api/eventos/{{idEvento}}", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "{{idEvento}}"] } },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));", "pm.test(\"aplica RN-06\", () => pm.expect(pm.response.json().message).to.contain(\"asistentes inscritos\"));"] } } ]
+        }
+      ]
+    },
+    {
+      "name": "Asistente",
+      "item": [
+        {
+          "name": "Listar asistentes (200)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/asistentes", "host": ["{{baseUrl}}"], "path": ["api", "asistentes"] } },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"200 OK\", () => pm.response.to.have.status(200));"] } } ]
+        },
+        {
+          "name": "Consultar un asistente (200)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/asistentes/{{idAsistente}}", "host": ["{{baseUrl}}"], "path": ["api", "asistentes", "{{idAsistente}}"] } },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"200 OK\", () => pm.response.to.have.status(200));"] } } ]
+        },
+        {
+          "name": "Actualizar asistente (200)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Asistente\",\n  \"apellido\": \"Actualizado\",\n  \"email\": \"asistente.actualizado@ues.edu.sv\",\n  \"telefono\": \"7000-1111\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/asistentes/{{idAsistente}}", "host": ["{{baseUrl}}"], "path": ["api", "asistentes", "{{idAsistente}}"] }
+          },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"200 OK\", () => pm.response.to.have.status(200));", "pm.test(\"actualiza el telefono\", () => pm.expect(pm.response.json().telefono).to.eql(\"7000-1111\"));"] } } ]
+        },
+        {
+          "name": "ERROR - Crear con correo repetido (409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Otro\",\n  \"apellido\": \"Asistente\",\n  \"email\": \"asistente.actualizado@ues.edu.sv\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/asistentes", "host": ["{{baseUrl}}"], "path": ["api", "asistentes"] }
+          },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));", "pm.test(\"aplica RN-09\", () => pm.expect(pm.response.json().message).to.contain(\"correo electronico ya esta registrado\"));"] } } ]
+        },
+        {
+          "name": "ERROR - Correo con formato invalido (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Sin\",\n  \"apellido\": \"Correo\",\n  \"email\": \"no-es-un-correo\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/asistentes", "host": ["{{baseUrl}}"], "path": ["api", "asistentes"] }
+          },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));"] } } ]
+        },
+        {
+          "name": "ERROR - Eliminar asistente con registros activos (409)",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{baseUrl}}/api/asistentes/{{idAsistente}}", "host": ["{{baseUrl}}"], "path": ["api", "asistentes", "{{idAsistente}}"] } },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));", "pm.test(\"aplica RN-08\", () => pm.expect(pm.response.json().message).to.contain(\"registros activos\"));"] } } ]
+        }
+      ]
+    },
+    {
+      "name": "Registro",
+      "item": [
+        {
+          "name": "Consultar un registro (200)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/registros/{{idRegistro}}", "host": ["{{baseUrl}}"], "path": ["api", "registros", "{{idRegistro}}"] } },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"200 OK\", () => pm.response.to.have.status(200));"] } } ]
+        },
+        {
+          "name": "ERROR - Registrar en evento inexistente (404)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"asistenteId\": {{idAsistente}}\n}" },
+            "url": { "raw": "{{baseUrl}}/api/eventos/999999/registros", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "999999", "registros"] }
+          },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"404 Not Found\", () => pm.response.to.have.status(404));"] } } ]
+        },
+        {
+          "name": "ERROR - Registrar sin asistente (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": { "raw": "{{baseUrl}}/api/eventos/{{idEvento}}/registros", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "{{idEvento}}", "registros"] }
+          },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));"] } } ]
+        },
+        {
+          "name": "ERROR - Eliminar un registro activo (409)",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{baseUrl}}/api/registros/{{idRegistro}}", "host": ["{{baseUrl}}"], "path": ["api", "registros", "{{idRegistro}}"] } },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));", "pm.test(\"solo se eliminan cancelados\", () => pm.expect(pm.response.json().message).to.contain(\"cancelados\"));"] } } ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" }
+  ]
+}
