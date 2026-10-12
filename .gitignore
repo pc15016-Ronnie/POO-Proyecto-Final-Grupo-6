@@ -1,0 +1,28 @@
+### Java / Maven ###
+target/
+build/
+*.class
+*.jar
+*.war
+!.mvn/wrapper/maven-wrapper.jar
+
+### IDE ###
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+bin/
+
+### Sistema / logs ###
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+
+### Variables de entorno ###
+.env
+application-local.yml
