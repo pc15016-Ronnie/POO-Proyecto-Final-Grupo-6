@@ -266,6 +266,49 @@
           ]
         },
         {
+          "name": "10b - Crear segundo asistente (201)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Asistente\",\n  \"apellido\": \"Secundario {{$timestamp}}\",\n  \"email\": \"asistente2.{{$timestamp}}@ues.edu.sv\",\n  \"telefono\": \"7000-0001\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/asistentes", "host": ["{{baseUrl}}"], "path": ["api", "asistentes"] },
+            "description": "Segundo asistente para demostrar que un evento puede tener varios inscritos."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
+                  "pm.environment.set(\"idAsistente2\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10c - Registrar segundo asistente (201)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"asistenteId\": {{idAsistente2}}\n}" },
+            "url": { "raw": "{{baseUrl}}/api/eventos/{{idEvento}}/registros", "host": ["{{baseUrl}}"], "path": ["api", "eventos", "{{idEvento}}", "registros"] },
+            "description": "Deja el evento con dos inscritos activos, necesario para probar RN-05."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "11 - Eliminar el registro cancelado (204)",
           "request": {
             "method": "DELETE",
@@ -413,17 +456,20 @@
           "request": {
             "method": "PUT",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Asistente\",\n  \"apellido\": \"Actualizado\",\n  \"email\": \"asistente.actualizado@ues.edu.sv\",\n  \"telefono\": \"7000-1111\"\n}" },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Asistente\",\n  \"apellido\": \"Actualizado\",\n  \"email\": \"{{emailActualizado}}\",\n  \"telefono\": \"7000-1111\"\n}" },
             "url": { "raw": "{{baseUrl}}/api/asistentes/{{idAsistente}}", "host": ["{{baseUrl}}"], "path": ["api", "asistentes", "{{idAsistente}}"] }
           },
-          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"200 OK\", () => pm.response.to.have.status(200));", "pm.test(\"actualiza el telefono\", () => pm.expect(pm.response.json().telefono).to.eql(\"7000-1111\"));"] } } ]
+          "event": [
+            { "listen": "prerequest", "script": { "type": "text/javascript", "exec": ["pm.environment.set(\"emailActualizado\", \"actualizado.\" + Date.now() + \"@ues.edu.sv\");"] } },
+            { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"200 OK\", () => pm.response.to.have.status(200));", "pm.test(\"actualiza el telefono\", () => pm.expect(pm.response.json().telefono).to.eql(\"7000-1111\"));"] } }
+          ]
         },
         {
           "name": "ERROR - Crear con correo repetido (409)",
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Otro\",\n  \"apellido\": \"Asistente\",\n  \"email\": \"asistente.actualizado@ues.edu.sv\"\n}" },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Otro\",\n  \"apellido\": \"Asistente\",\n  \"email\": \"{{emailActualizado}}\"\n}" },
             "url": { "raw": "{{baseUrl}}/api/asistentes", "host": ["{{baseUrl}}"], "path": ["api", "asistentes"] }
           },
           "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));", "pm.test(\"aplica RN-09\", () => pm.expect(pm.response.json().message).to.contain(\"correo electronico ya esta registrado\"));"] } } ]

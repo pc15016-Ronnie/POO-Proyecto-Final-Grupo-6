@@ -8,7 +8,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Maven](https://img.shields.io/badge/Apache_Maven-Build-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white)
 ![Entrega 1](https://img.shields.io/badge/Entrega_%231-Completada-success?style=for-the-badge)
-![Entrega 2](https://img.shields.io/badge/Entrega_%232-En_curso-blue?style=for-the-badge)
+![Entrega 2](https://img.shields.io/badge/Entrega_%232-Completada-success?style=for-the-badge)
 
 ### **UNIVERSIDAD DE EL SALVADOR**
 **Facultad Multidisciplinaria de Occidente**  
@@ -256,6 +256,8 @@ erDiagram
         timestamp fecha_cancelacion
     }
 ```
+
+**Diagramas en imagen:** [ERD conceptual](docs/entrega-1/erd-conceptual.png) · [ERD relacional](docs/entrega-1/erd-relacional.png) · [Documento completo de alineación (PDF)](docs/entrega-1/alineacion-modelo.pdf).
 
 <details>
 <summary><b>🔒 Ver Restricciones e Índices de la Base de Datos</b></summary>
