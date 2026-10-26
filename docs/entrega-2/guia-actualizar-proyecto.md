@@ -1,6 +1,6 @@
-# Guía para agentes — Actualizar el proyecto a la última versión de `main`
+# Guía para actualizar el proyecto a la última versión de `main`
 
-> **Para quien recibe esta guía:** eres un agente de IA y vas a actualizar la copia local del proyecto
+> **Para quien recibe esta guía:** vas a actualizar la copia local del proyecto
 > **API para Gestión de Eventos y Asistentes** (Grupo 6, POO135) en la computadora de un integrante del equipo.
 >
 > **Objetivo:** dejar el repositorio local exactamente en el último `main` publicado, con los cuatro módulos
