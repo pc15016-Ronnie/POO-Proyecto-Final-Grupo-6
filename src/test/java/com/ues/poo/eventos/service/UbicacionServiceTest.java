@@ -111,4 +111,35 @@ class UbicacionServiceTest {
 
         verify(ubicacionRepository).delete(ubicacion);
     }
+
+    @Test
+    @DisplayName("CU-06: obtiene una ubicacion existente por identificador")
+    void obtieneUbicacion() {
+        when(ubicacionRepository.findById(1L)).thenReturn(Optional.of(
+                Ubicacion.builder().id(1L).nombre("Auditorio Central").capacidad(250).build()));
+
+        var respuesta = ubicacionService.obtener(1L);
+
+        assertThat(respuesta.getId()).isEqualTo(1L);
+        assertThat(respuesta.getNombre()).isEqualTo("Auditorio Central");
+    }
+
+    @Test
+    @DisplayName("CU-07: responde 404 al actualizar una ubicacion inexistente")
+    void actualizaUbicacionInexistente() {
+        when(ubicacionRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> ubicacionService.actualizar(99L, dto()))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("ubicacion");
+    }
+
+    @Test
+    @DisplayName("CU-08: responde 404 al eliminar una ubicacion inexistente")
+    void eliminaUbicacionInexistente() {
+        when(ubicacionRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> ubicacionService.eliminar(99L))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
 }

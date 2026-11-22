@@ -1,0 +1,106 @@
+name: Entrega 3 - Pipeline local con act
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Compilar y probar
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Ejecutar pruebas JUnit
+        run: ./mvnw -B -ntp clean verify
+
+  deploy-local:
+    name: Construir imagen y desplegar en Kubernetes local
+    needs: verify
+    runs-on: ubuntu-latest
+    env:
+      KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD || 'eventos123' }}
+      K8S_HOST_ALIAS_IP: ${{ secrets.K8S_HOST_ALIAS_IP }}
+      KIND_NODE_NAME: ${{ secrets.KIND_NODE_NAME }}
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Docker desde el host
+        run: |
+          docker version
+          docker compose version
+
+      - name: Iniciar PostgreSQL local
+        run: |
+          docker compose up -d postgres
+          for attempt in $(seq 1 30); do
+            health="$(docker inspect --format '{{.State.Health.Status}}' eventos-db 2>/dev/null || true)"
+            if [ "$health" = "healthy" ]; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose ps
+          exit 1
+
+      - name: Construir imagen con etiqueta del commit
+        run: |
+          IMAGE_TAG="e3-${GITHUB_SHA::7}"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> "$GITHUB_ENV"
+          docker build --tag "eventos-api:$IMAGE_TAG" .
+          docker image inspect "eventos-api:$IMAGE_TAG" >/dev/null
+
+      - name: Cargar imagen en kind si aplica
+        if: ${{ env.KIND_NODE_NAME != '' }}
+        run: |
+          docker save "eventos-api:$IMAGE_TAG" \
+            | docker exec --interactive "$KIND_NODE_NAME" \
+              ctr -n k8s.io images import -
+
+      - name: Instalar kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.31.0
+
+      - name: Configurar Kubeconfig del runner
+        run: |
+          test -n "$KUBECONFIG_B64"
+          mkdir -p "$HOME/.kube"
+          printf '%s' "$KUBECONFIG_B64" | base64 --decode > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+          kubectl config current-context
+
+      - name: Aplicar manifiestos y actualizar imagen
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          kubectl -n eventos create secret generic eventos-db-secret \
+            --from-literal=DB_USER=eventos \
+            --from-literal=DB_PASSWORD="$DB_PASSWORD" \
+            --dry-run=client -o yaml | kubectl apply -f -
+          kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+          if [ -n "${K8S_HOST_ALIAS_IP:-}" ]; then
+            kubectl -n eventos patch deployment eventos-api --type merge \
+              -p "{\"spec\":{\"template\":{\"spec\":{\"hostAliases\":[{\"ip\":\"${K8S_HOST_ALIAS_IP}\",\"hostnames\":[\"host.docker.internal\"]}]}}}}"
+          fi
+          kubectl -n eventos set image deployment/eventos-api api="eventos-api:$IMAGE_TAG"
+          kubectl -n eventos rollout status deployment/eventos-api --timeout=180s
+          policy="$(kubectl -n eventos get deployment eventos-api \
+            -o jsonpath='{.spec.template.spec.containers[0].imagePullPolicy}')"
+          test "$policy" = "Never"
+
+      - name: Smoke tests HTTP
+        run: ./scripts/smoke-test.sh

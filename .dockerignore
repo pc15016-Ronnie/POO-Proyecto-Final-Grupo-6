@@ -1,0 +1,11 @@
+.git
+.github
+.idea
+.vscode
+.kube-local
+target
+docs
+postman
+*.log
+*.tmp
+README.md

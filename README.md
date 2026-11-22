@@ -9,6 +9,7 @@
 ![Maven](https://img.shields.io/badge/Apache_Maven-Build-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white)
 ![Entrega 1](https://img.shields.io/badge/Entrega_%231-Completada-success?style=for-the-badge)
 ![Entrega 2](https://img.shields.io/badge/Entrega_%232-Completada-success?style=for-the-badge)
+![Entrega 3](https://img.shields.io/badge/Entrega_%233-Implementada-blue?style=for-the-badge)
 
 ### **UNIVERSIDAD DE EL SALVADOR**
 **Facultad Multidisciplinaria de Occidente**  
@@ -28,10 +29,10 @@
 
 | Alumno/a | Carnet | Rol / Responsabilidad |
 | :--- | :---: | :--- |
-| **Castillo Zepeda, Azucena del Carmen** | `CZ08008` | Diseño de Base de Datos y análisis ER |
-| **Calzada Vargas, Carlos Enoc** | `CV19058` | Análisis, Casos de Uso y Documentación |
-| **Portillo Consuegra, Ronnie Odir** | `PC15016` | Creación de Repositorio GIT, README y Validaciones de Negocio |
-| **Serrano Benavides, Ángel Gustavo** | `SB22013` | Arquitectura de Clases UML, DTOs y Servicios |
+| **Castillo Zepeda, Azucena del Carmen** | `CZ08008` | Administrador, relaciones DB y pruebas |
+| **Calzada Vargas, Carlos Enoc** | `CV19058` | Registro, pipeline CI/CD y documentación |
+| **Portillo Consuegra, Ronnie Odir** | `PC15016` | Evento, Docker y Kubernetes |
+| **Serrano Benavides, Ángel Gustavo** | `SB22013` | Usuario, Swagger y pruebas de asistencia |
 
 ---
 
@@ -54,18 +55,25 @@
 * [15. Pruebas Automatizadas](#15-pruebas-automatizadas)
 * [16. Estructura del Proyecto](#16-estructura-del-proyecto)
 * [17. Problemas Frecuentes](#17-problemas-frecuentes)
-* [18. Entrega #2: Reparto por Ramas](#18-entrega-2-reparto-por-ramas)
+* [18. Historial de la Entrega #2](#18-historial-de-la-entrega-2)
+* [19. Swagger y OpenAPI](#19-swagger-y-openapi)
+* [20. Docker y Kubernetes local](#20-docker-y-kubernetes-local)
+* [21. Pipeline local con act](#21-pipeline-local-con-act)
+* [22. Entrega #3: Reparto por Ramas](#22-entrega-3-reparto-por-ramas)
+* [23. Documentación y Defensa](#23-documentación-y-defensa)
 
 ---
 
 ## 1. Descripción General del Sistema
 
-La **API para Gestión de Eventos y Asistentes** permite administrar eventos que ocurren en una ubicación física determinada, gestionar el catálogo de ubicaciones y asistentes, y controlar el registro a dichos eventos garantizando la capacidad máxima definida.
+La **API para Gestión de Eventos y Asistentes** permite administrar eventos que ocurren en una ubicación física determinada, gestionar el catálogo de ubicaciones, asistentes, credenciales y administradores, y controlar el registro a dichos eventos garantizando la capacidad máxima definida.
 
-El sistema expone operaciones `GET`, `POST`, `PUT` y `DELETE` para cada entidad y concentra su lógica de negocio en dos reglas críticas:
+El sistema expone 32 operaciones `GET`, `POST`, `PUT` y `DELETE` para las seis entidades concretas del UML: Ubicación, Evento, Asistente, Registro, Usuario y Administrador. Concentra su lógica de negocio en estas reglas críticas:
 
 1. **Control estricto de capacidad:** un evento no puede admitir más registros activos que su aforo máximo (`capacidad_maxima`).
 2. **Registro único:** un asistente no puede contar con dos inscripciones activas simultáneas para el mismo evento.
+3. **Integridad de perfiles:** una persona se vincula como máximo con un usuario y su rol debe corresponder al perfil.
+4. **Credenciales protegidas:** las contraseñas se codifican con BCrypt y nunca se devuelven por la API.
 
 ---
 
@@ -366,7 +374,7 @@ flujos alternativos y trazabilidad técnica de cada uno— están en el document
 **[`docs/entrega-1/fichas-casos-de-uso.md`](docs/entrega-1/fichas-casos-de-uso.md)**, junto con el diagrama de casos de uso
 en [`docs/entrega-1/diagrama-casos-uso.png`](docs/entrega-1/diagrama-casos-uso.png).
 
-Los casos críticos para la Entrega #2 son:
+Los casos críticos del dominio son:
 
 | Caso de uso | Endpoint | Reglas que aplica |
 | :--- | :--- | :--- |
@@ -440,16 +448,20 @@ Los casos críticos para la Entrega #2 son:
 | Herramienta | Versión |
 | :--- | :--- |
 | Java | 21 |
-| Spring Boot | 3.3.5 (Web, Data JPA, Validation) |
+| Spring Boot | 3.3.5 (Web, Data JPA, Validation, Actuator) |
 | Maven | 3.9 o superior |
 | PostgreSQL | 16 (contenedor Docker) |
 | Flyway | migraciones `V1` (esquema) y `V2` (datos de ejemplo) |
 | Lombok | 1.18 |
-| JUnit 5 + Mockito | pruebas unitarias |
-| Postman | colección incluida en `postman/` |
+| Springdoc OpenAPI | 2.6.0, Swagger UI |
+| Spring Security Crypto | BCrypt sin autenticación web |
+| JUnit 5 + Mockito + MockMvc | 58 pruebas automatizadas |
+| Docker + Kubernetes | imagen local, NodePort `30080` |
+| act | ejecución local del workflow de GitHub Actions |
+| Postman | 51 peticiones y 82 aserciones |
 
 Requisitos previos: JDK 21 (`java -version`), Maven 3.9+ (`mvn -v`), Docker con Docker Compose
-(`docker compose version`) y Postman Desktop o web para importar la colección.
+(`docker compose version`), Kubernetes habilitado en Docker Desktop y Postman Desktop o web.
 
 ---
 
@@ -467,7 +479,10 @@ docker compose up -d
 mvn spring-boot:run
 ```
 
-La API queda disponible en `http://localhost:8080`. Para reiniciar la base desde cero:
+La API queda disponible en `http://localhost:8080`. La documentación interactiva queda en
+`http://localhost:8080/swagger-ui/index.html` y el contrato OpenAPI en `http://localhost:8080/v3/api-docs`.
+
+Para reiniciar la base desde cero:
 
 ```bash
 docker compose down -v && docker compose up -d
@@ -491,6 +506,8 @@ Las credenciales por defecto se pueden sobrescribir con las variables `DB_URL`, 
 | `DELETE` | `/api/registros/{idRegistro}` | Elimina un registro cancelado |
 | `GET` | `/api/eventos/{idEvento}/disponibilidad` | CU-16 |
 | `GET` | `/api/eventos/{idEvento}/asistentes` | CU-17 |
+| `POST` · `GET` · `GET/{id}` · `PUT` · `DELETE` | `/api/usuarios` | CU-20 a CU-23 |
+| `POST` · `GET` · `GET/{id}` · `PUT` · `DELETE` | `/api/administradores` | CU-24 a CU-27 |
 
 ### Formato de error
 
@@ -507,7 +524,8 @@ Todas las respuestas de error usan el mismo formato:
 }
 ```
 
-Códigos usados: **400** datos inválidos · **404** recurso inexistente · **409** conflicto con una regla de negocio o dato duplicado.
+Códigos usados: **400** datos inválidos · **404** recurso inexistente · **405** método no permitido ·
+**409** conflicto de negocio o duplicado · **415** tipo de contenido no soportado · **500** error inesperado.
 
 ---
 
@@ -515,22 +533,24 @@ Códigos usados: **400** datos inválidos · **404** recurso inexistente · **40
 
 1. Importar `postman/Grupo6-eventos.postman_collection.json`.
 2. Importar el entorno `postman/local.postman_environment.json` y seleccionarlo.
-3. Ejecutar la carpeta **Flujo demo (en orden)**: crea ubicación, evento, asistente, registra, consulta disponibilidad, prueba el duplicado (409), llena el cupo (409), cancela (200) y vuelve a inscribir (201).
+3. Ejecutar **Flujo demo (en orden)**: crea ubicación, evento, asistente, registra, consulta disponibilidad, prueba el duplicado (409), llena el cupo (409), cancela (200) y vuelve a inscribir (201).
+4. Ejecutar las carpetas **Usuario** y **Administrador** para validar los CRUD nuevos y la relación `Persona-Usuario`.
 
-Las demás carpetas contienen los casos de éxito y de error de cada entidad, y cada integrante agrega en su rama
-el archivo `postman/casos-<entidad>.postman_collection.json` con las pruebas de su módulo.
+La colección final contiene 51 peticiones y 82 aserciones. Para usar Kubernetes, cambia `baseUrl` a
+`http://localhost:30080`; para ejecución local con Maven conserva `http://localhost:8080`.
 
 ---
 
 ## 15. Pruebas Automatizadas
 
 ```bash
-# Pruebas unitarias (JUnit 5 + Mockito) de las reglas de negocio
-mvn test
+# Compila, ejecuta las 58 pruebas y genera el JAR
+mvn clean verify
 ```
 
-Cubren: registro exitoso, cupo lleno, registro duplicado, evento no publicado, cancelación que libera cupo,
-RN-05 (capacidad menor a inscritos), RN-06, RN-08, RN-09 y el CRUD de ubicaciones.
+Distribución: 8 pruebas HTTP de errores, 9 de Ubicación, 9 de Evento, 7 de Asistente, 13 de Registro,
+6 de Usuario y 6 de Administrador. Cubren CRUD, validaciones, roles, relaciones, aforo, cancelación,
+restricciones de borrado y respuestas uniformes.
 
 ---
 
@@ -545,10 +565,14 @@ src/main/java/com/ues/poo/eventos
 ├── dto          # objetos de transferencia con validaciones
 ├── mapper       # conversión entidad <-> DTO
 └── exception    # excepciones y manejo global de errores
+config/                          # OpenAPI y BCrypt
 src/main/resources/db/migration   # V1 esquema, V2 datos de ejemplo
-src/test/java                     # pruebas unitarias
-postman/                          # colección y entorno de pruebas
-docs/                             # fichas, guion de defensa e instrucciones del equipo
+src/test/java                     # 58 pruebas JUnit, Mockito y MockMvc
+postman/                          # colección final y entorno
+k8s/                              # Namespace, ConfigMap, Deployment y Service
+scripts/                          # despliegue, smoke tests y ejecución de act
+.github/workflows/                # pipeline CI/CD
+docs/                             # documentos de las tres entregas y defensa
 ```
 
 ---
@@ -562,10 +586,14 @@ docs/                             # fichas, guion de defensa e instrucciones del
 | `Port 8080 already in use` | Detener el proceso que usa el puerto o arrancar con `--server.port=8081`. |
 | Error de checksum de Flyway | Reiniciar la base con `docker compose down -v && docker compose up -d`. |
 | `Schema validation: missing column` | Ejecutar `docker compose down -v` para reaplicar las migraciones actualizadas. |
+| Swagger responde 404 | Confirmar que la aplicación fue recompilada después de agregar Springdoc. |
+| Kubernetes no encuentra la imagen | Construirla en el mismo Docker Desktop que ejecuta el clúster y mantener `imagePullPolicy: Never`. |
+| El pod no alcanza PostgreSQL | Confirmar Docker Desktop, el contenedor `eventos-db` en `healthy` y `host.docker.internal:5432`. |
+| `act` no alcanza Kubernetes | Ejecutar con `--network host` y montar `/var/run/docker.sock`. |
 
 ---
 
-## 18. Entrega #2: Reparto por Ramas
+## 18. Historial de la Entrega #2
 
 La Entrega #2 se construye en cuatro pull requests, uno por integrante. Cada rama aporta la capa de servicio,
 los endpoints, las pruebas y los casos de Postman de su módulo:
@@ -580,6 +608,127 @@ los endpoints, las pruebas y los casos de Postman de su módulo:
 Los comandos exactos para cada integrante están en **[`docs/instrucciones-equipo.md`](docs/instrucciones-equipo.md)**.
 Mientras los pull requests están en revisión, la versión completa y funcional del proyecto se conserva en la rama
 `code/modulos`.
+
+---
+
+## 19. Swagger y OpenAPI
+
+La configuración central está en `OpenApiConfig`. Cada controlador tiene etiqueta, resumen de operación y
+respuestas comunes de error. La contraseña de `UsuarioRequestDTO` está marcada como `WRITE_ONLY`.
+
+| Recurso | URL |
+| :--- | :--- |
+| Swagger UI local | `http://localhost:8080/swagger-ui/index.html` |
+| OpenAPI JSON local | `http://localhost:8080/v3/api-docs` |
+| Swagger UI Kubernetes | `http://localhost:30080/swagger-ui/index.html` |
+| Health | `http://localhost:30080/actuator/health` |
+
+La API no implementa login ni autorización. El CRUD de Usuario administra credenciales para el modelo del
+dominio; no debe exponerse como servicio público sin incorporar autenticación.
+
+---
+
+## 20. Docker y Kubernetes local
+
+La imagen se construye con Dockerfile multietapa, Java 21 y usuario no-root:
+
+```bash
+docker build -t eventos-api:local .
+```
+
+El despliegue automático local ejecuta Compose, construye la imagen con el SHA actual, crea el Secret,
+aplica los manifiestos, actualiza el Deployment y ejecuta smoke tests:
+
+```bash
+./scripts/deploy-k8s.sh
+```
+
+En PowerShell:
+
+```powershell
+.\scripts\deploy-k8s.ps1
+```
+
+Verificación:
+
+```bash
+kubectl -n eventos get pods,deploy,svc
+kubectl -n eventos rollout status deployment/eventos-api
+kubectl -n eventos get deployment eventos-api \
+  -o jsonpath='{.spec.template.spec.containers[0].imagePullPolicy}{"\n"}'
+curl http://localhost:30080/actuator/health
+```
+
+PostgreSQL permanece en Docker Compose. La API desplegada usa
+`jdbc:postgresql://host.docker.internal:5432/eventosdb`; el usuario y la contraseña se inyectan mediante
+el Secret `eventos-db-secret`. No se almacenan credenciales de Kubernetes en Git.
+
+---
+
+## 21. Pipeline local con act
+
+El workflow remoto `Entrega 3 - Calidad` se ejecuta en cada push a `main`. El workflow local
+`Entrega 3 - Pipeline local con act` agrega el despliegue y tiene dos etapas:
+
+1. `verify`: compila y ejecuta `./mvnw clean verify`.
+2. `deploy-local`: construye la imagen, despliega en Docker Desktop Kubernetes y ejecuta smoke tests.
+
+El workflow local se activa manualmente con `workflow_dispatch`, por lo que GitHub no intenta desplegar
+en una computadora local.
+
+Preparar el Kubeconfig local:
+
+```bash
+mkdir -p .kube-local
+kubectl config view --raw --minify > .kube-local/config
+chmod 600 .kube-local/config
+```
+
+Ejecutar todo:
+
+```bash
+./scripts/run-act.sh
+```
+
+En PowerShell:
+
+```powershell
+.\scripts\run-act.ps1
+```
+
+El script pasa `.kube-local/config` como `KUBECONFIG_B64`. act conecta automáticamente el socket de Docker y
+el script usa la red del host.
+El workflow verifica que la política de imagen sea exactamente `Never`.
+
+---
+
+## 22. Entrega #3: Reparto por Ramas
+
+| Integrante | Rama | Aporte verificable |
+| :--- | :--- | :--- |
+| Serrano Benavides, Ángel | `feat/e3-usuario-swagger` | CRUD Usuario, Swagger y pruebas |
+| Castillo Zepeda, Azucena | `feat/e3-administrador-db` | CRUD Administrador, relación global de correo y pruebas |
+| Portillo Consuegra, Ronnie | `feat/e3-docker-k8s` | Dockerfile, manifiestos y despliegue |
+| Calzada Vargas, Carlos Enoc | `feat/e3-act-ci-docs` | Pipeline, errores HTTP, README y documentación |
+
+Revisión cruzada: Ronnie revisa a Enoc, Enoc revisa a Ronnie, Ángel revisa a Azucena y Azucena revisa a Ángel.
+Cada integrante debe publicar su rama, abrir un pull request, recibir aprobación y hacer merge a `main`.
+Los comandos y criterios de aceptación están en
+**[`docs/entrega-3/reparto-colaborativo.md`](docs/entrega-3/reparto-colaborativo.md)**.
+
+---
+
+## 23. Documentación y Defensa
+
+* [Guía de despliegue](docs/entrega-3/guia-despliegue.md)
+* [Matriz de rúbrica y evidencias](docs/entrega-3/matriz-rubrica.md)
+* [Guion de defensa](docs/entrega-3/guion-defensa.md)
+* [Reparto colaborativo](docs/entrega-3/reparto-colaborativo.md)
+* [Checklist final](docs/entrega-3/checklist-final.md)
+* [Evidencias de verificación](docs/entrega-3/evidencias-verificacion.md)
+
+El tutor puede elegir a cualquier integrante para explicar código, base de datos, Swagger, pruebas, Git,
+Docker, Kubernetes o `act`; por ello los cuatro deben ejecutar y ensayar la demostración completa.
 
 ---
 

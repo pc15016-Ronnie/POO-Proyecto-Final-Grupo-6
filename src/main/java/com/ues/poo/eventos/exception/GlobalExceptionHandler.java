@@ -3,6 +3,7 @@ package com.ues.poo.eventos.exception;
 import com.ues.poo.eventos.dto.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,12 +14,14 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 /** Manejo centralizado de errores: todas las respuestas usan el mismo formato. */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -66,6 +69,13 @@ public class GlobalExceptionHandler {
                 "El parametro '" + ex.getName() + "' tiene un valor invalido", request, null);
     }
 
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> parametroFaltante(MissingServletRequestParameterException ex,
+                                                           HttpServletRequest request) {
+        return construir(HttpStatus.BAD_REQUEST,
+                "Falta el parametro obligatorio '" + ex.getParameterName() + "'", request, null);
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> integridad(DataIntegrityViolationException ex, HttpServletRequest request) {
         return construir(HttpStatus.CONFLICT,
@@ -95,6 +105,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> errorInesperado(Exception ex, HttpServletRequest request) {
+        log.error("Error no controlado en {} {}", request.getMethod(), request.getRequestURI(), ex);
         return construir(HttpStatus.INTERNAL_SERVER_ERROR,
                 "Ocurrio un error inesperado al procesar la solicitud", request, null);
     }
