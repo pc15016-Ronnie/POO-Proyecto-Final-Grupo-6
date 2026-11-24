@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eventos-api-config
+  namespace: eventos
+data:
+  DB_URL: jdbc:postgresql://host.docker.internal:5432/eventosdb
