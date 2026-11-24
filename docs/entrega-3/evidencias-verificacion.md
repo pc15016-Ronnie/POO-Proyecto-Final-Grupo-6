@@ -3,6 +3,8 @@
 **Fecha de ejecución:** 15 de noviembre de 2026  
 **Entorno:** Linux, Java 21.0.13, Maven 3.9.9, Docker Engine 29.9.3.
 
+**Actualización final:** 23 de noviembre de 2026, `main` en `ab98b56`.
+
 ## Compilación y pruebas
 
 ```text
@@ -90,9 +92,28 @@ Resultados del pipeline:
 - Health, OpenAPI, Swagger y endpoint de eventos verificados.
 - Smoke tests completados.
 
-## Validación pendiente del equipo antes de la tutoría
+## Integración final de GitHub
 
-- Repetir el despliegue en el Docker Desktop de la máquina de presentación.
-- Publicar las cuatro ramas y abrir los pull requests con revisión cruzada.
-- Confirmar que las cuatro cuentas aparecen en GitHub Contributors.
+Los cuatro aportes individuales y la base compartida fueron fusionados:
+
+| PR | Rama | Resultado |
+| :---: | :--- | :--- |
+| #6 | `feat/e3-base` | Fusionado |
+| #7 | `feat/e3-act-ci-docs` | Fusionado |
+| #8 | `feat/e3-usuario-swagger` | Fusionado |
+| #9 | `feat/e3-administrador-db` | Fusionado |
+| #10 | `feat/e3-docker-k8s` | Fusionado |
+
+La verificación repetida sobre el merge final `ab98b56` confirmó:
+
+- 58 pruebas JUnit en verde.
+- 32 operaciones OpenAPI.
+- Swagger y Actuator accesibles.
+- Postman con 51 peticiones y 82 aserciones, sin fallos.
+
+## Validación final en Docker Desktop
+
+- Ejecutar `./scripts/run-act.sh` en la máquina de presentación y guardar la captura del pipeline.
+- Confirmar que la imagen generada se llama `eventos-api:e3-ab98b56`.
+- Capturar Docker Desktop mostrando la imagen y el Pod en ejecución.
 - Reiniciar la base si se desea iniciar la demostración con solo los datos de Flyway.

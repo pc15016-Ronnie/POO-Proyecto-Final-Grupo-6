@@ -12,11 +12,11 @@
 ## Base de datos
 
 - [x] `eventos-db` está `healthy`.
-- [ ] Flyway aplica V1 y V2.
-- [ ] Registro duplicado activo devuelve `409`.
-- [ ] Cancelación libera cupo y permite reinscribirse.
-- [ ] Usuario con perfil no puede eliminarse.
-- [ ] Administrador y Asistente validan el rol del usuario.
+- [x] Flyway aplica V1 y V2.
+- [x] Registro duplicado activo devuelve `409`.
+- [x] Cancelación libera cupo y permite reinscribirse.
+- [x] Usuario con perfil no puede eliminarse.
+- [x] Administrador y Asistente validan el rol del usuario.
 
 ## Docker y Kubernetes
 
@@ -39,11 +39,11 @@
 
 ## GitHub y documentación
 
-- [ ] Cada integrante subió su rama y abrió su PR.
-- [ ] Cada PR tiene el revisor cruzado asignado.
-- [ ] Los cuatro integrantes aparecen en Contributors.
-- [ ] README actualizado.
-- [ ] Documentos de `docs/entrega-3` revisados.
+- [x] Cada integrante subió su rama y abrió su PR.
+- [x] Cada PR tiene el revisor cruzado asignado.
+- [x] Los cuatro integrantes aparecen en Contributors.
+- [x] README actualizado.
+- [x] Documentos de `docs/entrega-3` revisados.
 - [ ] Los cuatro integrantes ensayaron la demo completa.
 
 ## Defensa
