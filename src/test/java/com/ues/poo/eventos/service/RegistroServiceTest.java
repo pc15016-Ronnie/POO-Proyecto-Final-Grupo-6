@@ -187,4 +187,82 @@ class RegistroServiceTest {
         assertThat(disponibilidad.getInscritos()).isEqualTo(1);
         assertThat(disponibilidad.getDisponibles()).isEqualTo(2);
     }
+
+    @Test
+    @DisplayName("CU-14: responde 404 cuando el asistente no existe")
+    void asistenteInexistente() {
+        when(eventoRepository.buscarParaRegistro(10L)).thenReturn(Optional.of(eventoPublicado));
+        when(asistenteRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> registroService.registrar(10L, new RegistroRequestDTO(99L)))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("asistente");
+    }
+
+    @Test
+    @DisplayName("RN-10: rechaza registrar en un evento cuya fecha ya paso")
+    void rechazaEventoRealizado() {
+        eventoPublicado.setFechaInicio(LocalDateTime.now().minusDays(1));
+        when(eventoRepository.buscarParaRegistro(10L)).thenReturn(Optional.of(eventoPublicado));
+        when(asistenteRepository.findById(5L)).thenReturn(Optional.of(asistente));
+
+        assertThatThrownBy(() -> registroService.registrar(10L, new RegistroRequestDTO(5L)))
+                .isInstanceOf(ConflictException.class)
+                .hasMessageContaining("ya se realizo");
+    }
+
+    @Test
+    @DisplayName("CU-15: no permite cancelar el registro de un evento finalizado")
+    void rechazaCancelarEventoRealizado() {
+        eventoPublicado.setFechaInicio(LocalDateTime.now().minusDays(1));
+        Registro registro = Registro.builder()
+                .id(7L)
+                .evento(eventoPublicado)
+                .asistente(asistente)
+                .estado(EstadoRegistro.ACTIVO)
+                .fechaRegistro(LocalDateTime.now().minusDays(2))
+                .build();
+        when(registroRepository.findById(7L)).thenReturn(Optional.of(registro));
+
+        assertThatThrownBy(() -> registroService.cancelar(7L))
+                .isInstanceOf(ConflictException.class)
+                .hasMessageContaining("evento finalizado");
+    }
+
+    @Test
+    @DisplayName("CU-15: no permite eliminar un registro que sigue activo")
+    void rechazaEliminarRegistroActivo() {
+        Registro registro = Registro.builder()
+                .id(7L)
+                .evento(eventoPublicado)
+                .asistente(asistente)
+                .estado(EstadoRegistro.ACTIVO)
+                .fechaRegistro(LocalDateTime.now().minusDays(1))
+                .build();
+        when(registroRepository.findById(7L)).thenReturn(Optional.of(registro));
+
+        assertThatThrownBy(() -> registroService.eliminar(7L))
+                .isInstanceOf(ConflictException.class)
+                .hasMessageContaining("cancelados");
+
+        verify(registroRepository, never()).delete(any(Registro.class));
+    }
+
+    @Test
+    @DisplayName("CU-15: elimina un registro cancelado conservando la trazabilidad de los activos")
+    void eliminaRegistroCancelado() {
+        Registro registro = Registro.builder()
+                .id(7L)
+                .evento(eventoPublicado)
+                .asistente(asistente)
+                .estado(EstadoRegistro.CANCELADO)
+                .fechaRegistro(LocalDateTime.now().minusDays(2))
+                .fechaCancelacion(LocalDateTime.now().minusDays(1))
+                .build();
+        when(registroRepository.findById(7L)).thenReturn(Optional.of(registro));
+
+        registroService.eliminar(7L);
+
+        verify(registroRepository).delete(registro);
+    }
 }
