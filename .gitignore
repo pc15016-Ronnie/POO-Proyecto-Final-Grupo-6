@@ -26,3 +26,7 @@ Thumbs.db
 ### Variables de entorno ###
 .env
 application-local.yml
+
+### Kubernetes / act locales ###
+.kube-local/
+.act/
