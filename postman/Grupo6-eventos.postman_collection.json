@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "6a1b7c2e-0000-4000-8000-grupo6eventos0001",
     "name": "Grupo 6 - API Eventos y Asistentes",
-    "description": "Coleccion de pruebas de la API para Gestion de Eventos y Asistentes.\n\nIncluye carpetas por entidad (Ubicacion, Evento, Asistente, Registro), los casos de exito y de error, y la carpeta **Flujo demo** con la secuencia que se muestra en la defensa.\n\nAntes de ejecutar: levantar la base con `docker compose up -d`, arrancar la app con `mvn spring-boot:run` e importar el entorno `local.postman_environment.json`.",
+    "description": "Coleccion final de pruebas de la API para Gestion de Eventos y Asistentes.\n\nIncluye carpetas para Ubicacion, Evento, Asistente, Registro, Usuario y Administrador, casos de exito y error, y la carpeta **Flujo demo** con la secuencia de la defensa. Contiene 51 peticiones y 82 aserciones.\n\nAntes de ejecutar: levantar la base con `docker compose up -d`, arrancar la app con `mvn spring-boot:run` e importar el entorno `local.postman_environment.json`.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -523,6 +523,189 @@
           "name": "ERROR - Eliminar un registro activo (409)",
           "request": { "method": "DELETE", "header": [], "url": { "raw": "{{baseUrl}}/api/registros/{{idRegistro}}", "host": ["{{baseUrl}}"], "path": ["api", "registros", "{{idRegistro}}"] } },
           "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));", "pm.test(\"solo se eliminan cancelados\", () => pm.expect(pm.response.json().message).to.contain(\"cancelados\"));"] } } ]
+        }
+      ]
+    },
+    {
+      "name": "Usuario",
+      "item": [
+        {
+          "name": "Crear usuario temporal (201)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"usuario.{{$timestamp}}\",\n  \"password\": \"secreto123\",\n  \"rol\": \"ASISTENTE\",\n  \"activo\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/usuarios", "host": ["{{baseUrl}}"], "path": ["api", "usuarios"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.environment.set(\"idUsuario\", body.id);",
+                  "pm.environment.set(\"usernameUsuario\", body.username);",
+                  "pm.test(\"normaliza el username\", () => pm.expect(body.username).to.eql(body.username.toLowerCase()));",
+                  "pm.test(\"no expone la contrasena\", () => pm.expect(body).not.to.have.property(\"password\"));",
+                  "pm.test(\"no expone passwordHash\", () => pm.expect(body).not.to.have.property(\"passwordHash\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar usuarios (200)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/usuarios", "host": ["{{baseUrl}}"], "path": ["api", "usuarios"] } },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"200 OK\", () => pm.response.to.have.status(200));", "pm.test(\"devuelve un arreglo\", () => pm.expect(Array.isArray(pm.response.json())).to.be.true);"] } } ]
+        },
+        {
+          "name": "Consultar usuario (200)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/usuarios/{{idUsuario}}", "host": ["{{baseUrl}}"], "path": ["api", "usuarios", "{{idUsuario}}"] } },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"200 OK\", () => pm.response.to.have.status(200));"] } } ]
+        },
+        {
+          "name": "Actualizar usuario (200)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{usernameUsuario}}\",\n  \"password\": \"nuevaClave9\",\n  \"rol\": \"ADMINISTRADOR\",\n  \"activo\": false\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/usuarios/{{idUsuario}}", "host": ["{{baseUrl}}"], "path": ["api", "usuarios", "{{idUsuario}}"] }
+          },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"200 OK\", () => pm.response.to.have.status(200));", "pm.test(\"actualiza rol y estado\", () => { const b = pm.response.json(); pm.expect(b.rol).to.eql(\"ADMINISTRADOR\"); pm.expect(b.activo).to.eql(false); });"] } } ]
+        },
+        {
+          "name": "ERROR - Username duplicado (409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{usernameUsuario}}\",\n  \"password\": \"secreto123\",\n  \"rol\": \"ASISTENTE\",\n  \"activo\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/usuarios", "host": ["{{baseUrl}}"], "path": ["api", "usuarios"] }
+          },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));"] } } ]
+        },
+        {
+          "name": "Eliminar usuario sin perfil (204)",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{baseUrl}}/api/usuarios/{{idUsuario}}", "host": ["{{baseUrl}}"], "path": ["api", "usuarios", "{{idUsuario}}"] } },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"204 No Content\", () => pm.response.to.have.status(204));"] } } ]
+        }
+      ]
+    },
+    {
+      "name": "Administrador",
+      "item": [
+        {
+          "name": "Crear usuario ADMINISTRADOR para vincular (201)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin.perfil.{{$timestamp}}\",\n  \"password\": \"secreto123\",\n  \"rol\": \"ADMINISTRADOR\",\n  \"activo\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/usuarios", "host": ["{{baseUrl}}"], "path": ["api", "usuarios"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
+                  "pm.environment.set(\"idUsuarioAdmin\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear administrador vinculado (201)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Administrador\",\n  \"apellido\": \"Postman\",\n  \"email\": \"admin.{{$timestamp}}@ues.edu.sv\",\n  \"telefono\": \"7000-9000\",\n  \"departamento\": \"Ingenieria\",\n  \"usuarioId\": {{idUsuarioAdmin}}\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/administradores", "host": ["{{baseUrl}}"], "path": ["api", "administradores"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.environment.set(\"idAdministrador\", body.id);",
+                  "pm.environment.set(\"emailAdmin\", body.email);",
+                  "pm.test(\"normaliza el correo\", () => pm.expect(body.email).to.eql(body.email.toLowerCase()));",
+                  "pm.test(\"conserva el vinculo con usuario\", () => pm.expect(body.usuarioId).to.eql(Number(pm.environment.get(\"idUsuarioAdmin\"))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar administradores (200)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/administradores", "host": ["{{baseUrl}}"], "path": ["api", "administradores"] } },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"200 OK\", () => pm.response.to.have.status(200));"] } } ]
+        },
+        {
+          "name": "Consultar administrador (200)",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/api/administradores/{{idAdministrador}}", "host": ["{{baseUrl}}"], "path": ["api", "administradores", "{{idAdministrador}}"] } },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"200 OK\", () => pm.response.to.have.status(200));"] } } ]
+        },
+        {
+          "name": "Actualizar administrador (200)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Administrador\",\n  \"apellido\": \"Actualizado\",\n  \"email\": \"{{emailAdmin}}\",\n  \"telefono\": \"7000-9999\",\n  \"departamento\": \"Arquitectura\",\n  \"usuarioId\": {{idUsuarioAdmin}}\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/administradores/{{idAdministrador}}", "host": ["{{baseUrl}}"], "path": ["api", "administradores", "{{idAdministrador}}"] }
+          },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"200 OK\", () => pm.response.to.have.status(200));", "pm.test(\"actualiza departamento\", () => pm.expect(pm.response.json().departamento).to.eql(\"Arquitectura\"));"] } } ]
+        },
+        {
+          "name": "ERROR - Correo de administrador duplicado (409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Otro\",\n  \"apellido\": \"Administrador\",\n  \"email\": \"{{emailAdmin}}\",\n  \"departamento\": \"Ingenieria\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/administradores", "host": ["{{baseUrl}}"], "path": ["api", "administradores"] }
+          },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));"] } } ]
+        },
+        {
+          "name": "ERROR - Eliminar usuario con perfil (409)",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{baseUrl}}/api/usuarios/{{idUsuarioAdmin}}", "host": ["{{baseUrl}}"], "path": ["api", "usuarios", "{{idUsuarioAdmin}}"] } },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));"] } } ]
+        },
+        {
+          "name": "Eliminar administrador (204)",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{baseUrl}}/api/administradores/{{idAdministrador}}", "host": ["{{baseUrl}}"], "path": ["api", "administradores", "{{idAdministrador}}"] } },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"204 No Content\", () => pm.response.to.have.status(204));"] } } ]
+        },
+        {
+          "name": "Eliminar usuario despues de quitar el perfil (204)",
+          "request": { "method": "DELETE", "header": [], "url": { "raw": "{{baseUrl}}/api/usuarios/{{idUsuarioAdmin}}", "host": ["{{baseUrl}}"], "path": ["api", "usuarios", "{{idUsuarioAdmin}}"] } },
+          "event": [ { "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test(\"204 No Content\", () => pm.response.to.have.status(204));"] } } ]
         }
       ]
     }
