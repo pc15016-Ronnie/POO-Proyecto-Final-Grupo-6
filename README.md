@@ -726,6 +726,7 @@ Los comandos y criterios de aceptación están en
 * [Reparto colaborativo](docs/entrega-3/reparto-colaborativo.md)
 * [Checklist final](docs/entrega-3/checklist-final.md)
 * [Evidencias de verificación](docs/entrega-3/evidencias-verificacion.md)
+* [Guía completa de ejecución y demostración](docs/entrega-3/guia-completa-ejecucion.md)
 
 El tutor puede elegir a cualquier integrante para explicar código, base de datos, Swagger, pruebas, Git,
 Docker, Kubernetes o `act`; por ello los cuatro deben ejecutar y ensayar la demostración completa.
