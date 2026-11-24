@@ -18,8 +18,8 @@ public final class AsistenteMapper {
     }
 
     public static void copiarDatos(Asistente destino, AsistenteRequestDTO dto) {
-        destino.setNombre(dto.getNombre());
-        destino.setApellido(dto.getApellido());
+        destino.setNombre(dto.getNombre().trim());
+        destino.setApellido(dto.getApellido().trim());
         destino.setEmail(dto.getEmail().trim().toLowerCase());
         destino.setTelefono(dto.getTelefono());
     }
